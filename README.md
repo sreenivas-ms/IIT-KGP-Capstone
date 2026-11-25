@@ -101,6 +101,7 @@ Read `docs/INTEGRATION_CONTRACTS.md` and `docs/DEVELOPMENT_WORKFLOW.md` before c
 - `docs/INTEGRATION_CONTRACTS.md` — schemas and interface rules.
 - `docs/SECURITY.md` — upload, prompt-injection, PII and sandbox controls.
 - `docs/DATA_DICTIONARY.md` — metric and dataset rules.
+- `docs/PLANNER.md` — Qwen client, Planner prompt/policies, live evaluation and integration notes (P3).
 - `docs/PROFILING_AND_RETRIEVAL.md` — profiling warnings, retrieval index build, provenance and evaluation (P2).
 
 ## Profiling and retrieval (P2) quick start

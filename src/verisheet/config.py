@@ -15,8 +15,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     qwen_api_base: str = ""
-    qwen_api_key: str = ""
-    qwen_model: str = "Qwen3-8B"
+    qwen_api_key: SecretStr = SecretStr("")
+    qwen_model: str = "Qwen/Qwen3-8B"  # Track B guide: same model id for every group
+    qwen_ca_cert: str = ""  # private CA for the Qwen endpoint; relative to project root
+    qwen_timeout_seconds: int = Field(default=45, ge=1, le=600)
     # Shared capstone embedding API (OpenAI-compatible /v1/embeddings); see src/verisheet/embeddings.py.
     embedding_provider: str = "auto"  # auto | api | local
     embedding_api_base: str = ""

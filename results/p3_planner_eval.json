@@ -1,0 +1,201 @@
+[
+  {
+    "case": "aggregation",
+    "question": "What are total sales?",
+    "expected": "plan",
+    "outcome": "plan",
+    "detail": "ops=['group_aggregate'] ",
+    "pass": true,
+    "plan_id": "plan-67e17e73",
+    "assumptions": [
+      "Total sales = sum(Sales) from the Orders sheet"
+    ],
+    "calls": 1,
+    "input_tokens": 3363,
+    "output_tokens": 160,
+    "latency_ms": 4276.5,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  },
+  {
+    "case": "group",
+    "question": "Show total sales by region",
+    "expected": "plan",
+    "outcome": "plan",
+    "detail": "ops=['group_aggregate'] ",
+    "pass": true,
+    "plan_id": "plan-da6ca823",
+    "assumptions": [
+      "Last completed quarter = quarter before the quarter containing the max observed Order_Date (no Data_Through field)."
+    ],
+    "calls": 1,
+    "input_tokens": 3333,
+    "output_tokens": 175,
+    "latency_ms": 4391.6,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  },
+  {
+    "case": "time",
+    "question": "Show monthly sales",
+    "expected": "plan",
+    "outcome": "plan",
+    "detail": "ops=['time_aggregate'] ",
+    "pass": true,
+    "plan_id": "plan-b391d2e0",
+    "assumptions": [
+      "Monthly sales aggregated by Order_Date"
+    ],
+    "calls": 1,
+    "input_tokens": 3303,
+    "output_tokens": 233,
+    "latency_ms": 5817.0,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  },
+  {
+    "case": "chart",
+    "question": "Plot total profit by region as a bar chart",
+    "expected": "plan",
+    "outcome": "plan",
+    "detail": "ops=['group_aggregate'] ",
+    "pass": true,
+    "plan_id": "plan-065381ea",
+    "assumptions": [
+      "Last completed quarter = quarter before the quarter containing the max observed Order_Date (no Data_Through field)."
+    ],
+    "calls": 1,
+    "input_tokens": 3357,
+    "output_tokens": 251,
+    "latency_ms": 6220.3,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  },
+  {
+    "case": "margin",
+    "question": "What is the profit margin by region?",
+    "expected": "plan",
+    "outcome": "plan",
+    "detail": "ops=['grouped_ratio'] ",
+    "pass": true,
+    "plan_id": "plan-b14fcd7b",
+    "assumptions": [
+      "Last completed quarter = quarter before the quarter containing the max observed Order_Date (no Data_Through field)."
+    ],
+    "calls": 1,
+    "input_tokens": 3309,
+    "output_tokens": 269,
+    "latency_ms": 6682.7,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  },
+  {
+    "case": "quarter",
+    "question": "Compare profit in the last two completed quarters",
+    "expected": "plan",
+    "outcome": "plan",
+    "detail": "ops=['quarter_comparison'] ",
+    "pass": true,
+    "plan_id": "plan-39506314",
+    "assumptions": [
+      "Last completed quarter = quarter before the quarter containing the max observed Order_Date (no Data_Through field)."
+    ],
+    "calls": 1,
+    "input_tokens": 3363,
+    "output_tokens": 244,
+    "latency_ms": 6046.3,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  },
+  {
+    "case": "top_n",
+    "question": "Which 2 orders had the highest sales?",
+    "expected": "plan",
+    "outcome": "plan",
+    "detail": "ops=['top_n'] ",
+    "pass": true,
+    "plan_id": "plan-61f4b560",
+    "assumptions": [
+      "Last completed quarter = quarter before the quarter containing the max observed Order_Date (no Data_Through field)."
+    ],
+    "calls": 2,
+    "input_tokens": 6937,
+    "output_tokens": 475,
+    "latency_ms": 11734.5,
+    "json_repairs": 0,
+    "policy_repairs": 1
+  },
+  {
+    "case": "join",
+    "question": "Join orders with product costs on Product_ID",
+    "expected": "plan",
+    "outcome": "plan_failed_execution",
+    "detail": "ops=['safe_join'] Left join keys violate declared cardinality",
+    "pass": false,
+    "plan_id": "plan-c0a8dcd7",
+    "assumptions": [
+      "Join on Product_ID with many_to_one cardinality"
+    ],
+    "calls": 3,
+    "input_tokens": 10957,
+    "output_tokens": 1421,
+    "latency_ms": 34747.5,
+    "json_repairs": 1,
+    "policy_repairs": 1
+  },
+  {
+    "case": "retail_profit",
+    "question": "What was total profit?",
+    "expected": "clarify",
+    "outcome": "clarify",
+    "detail": "The dataset does not contain a Profit column. Do you have the necessary cost data to calculate profit?",
+    "pass": true,
+    "plan_id": "plan-ed75b49c",
+    "assumptions": [
+      "No Profit column in the dataset; clarification needed"
+    ],
+    "calls": 1,
+    "input_tokens": 3077,
+    "output_tokens": 172,
+    "latency_ms": 4284.6,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  },
+  {
+    "case": "retail_sales",
+    "question": "What were total sales excluding cancellations?",
+    "expected": "clarify",
+    "outcome": "clarify",
+    "detail": "The value cannot be computed yet as there is no operation that computes the product of columns. Please provide the necessary data or clarify how to calculate sales.",
+    "pass": true,
+    "plan_id": "plan-13757119",
+    "assumptions": [
+      "Cancellations are identified by InvoiceNo starting with 'C'",
+      "Total sales are calculated as sum(Quantity * UnitPrice)"
+    ],
+    "calls": 2,
+    "input_tokens": 6780,
+    "output_tokens": 662,
+    "latency_ms": 16190.3,
+    "json_repairs": 0,
+    "policy_repairs": 1
+  },
+  {
+    "case": "ambiguous",
+    "question": "How did we do?",
+    "expected": "clarify",
+    "outcome": "clarify",
+    "detail": "Which metric and period would you like to compare?",
+    "pass": true,
+    "plan_id": "plan-620c89fe",
+    "assumptions": [
+      "Last completed quarter = quarter before the quarter containing the max observed Order_Date (no Data_Through field)."
+    ],
+    "calls": 1,
+    "input_tokens": 3374,
+    "output_tokens": 160,
+    "latency_ms": 4114.8,
+    "json_repairs": 0,
+    "policy_repairs": 0
+  }
+]
