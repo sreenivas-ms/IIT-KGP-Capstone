@@ -1,0 +1,61 @@
+{
+  "plan_id": "plan-example",
+  "goal": "compare_profit_in_last_two_completed_quarters",
+  "metric": {
+    "name": "profit",
+    "source_columns": [
+      "Profit"
+    ],
+    "aggregation": "sum",
+    "formula": "sum(Profit)",
+    "definition_source": "docs/DATA_DICTIONARY.md#calculation-conventions"
+  },
+  "source_sheets": [
+    "Orders"
+  ],
+  "date_policy": "previous_to_quarter_containing_max_observed_date",
+  "steps": [
+    {
+      "step_id": "quarter-profit",
+      "tool": "run_analysis",
+      "operation": "quarter_comparison",
+      "validation_checks": [
+        "two_completed_quarters",
+        "aggregation_is_sum"
+      ],
+      "inputs": {
+        "sheet": "Orders",
+        "date_column": "Order_Date",
+        "metric_column": "Profit",
+        "aggregation": "sum"
+      }
+    },
+    {
+      "step_id": "chart",
+      "tool": "make_chart",
+      "depends_on": [
+        "quarter-profit"
+      ],
+      "validation_checks": [
+        "chart_data_matches_result_table"
+      ],
+      "inputs": {
+        "source_step_id": "quarter-profit"
+      }
+    }
+  ],
+  "chart_spec": {
+    "chart_type": "bar",
+    "title": "Profit: last two completed quarters",
+    "x_column": "quarter",
+    "y_column": "Profit"
+  },
+  "checks": [
+    "metric_is_sum",
+    "period_is_correct",
+    "chart_matches_result"
+  ],
+  "assumptions": [
+    "Last completed quarter = quarter before the quarter containing the max observed Order_Date (no Data_Through field)."
+  ]
+}
