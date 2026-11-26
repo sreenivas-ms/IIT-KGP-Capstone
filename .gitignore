@@ -36,3 +36,11 @@ config/*.crt
 # Any env/secrets variant except the documented template
 .env.*
 !.env.example
+
+# Keys and credentials in any other form
+*.pem
+*.key
+*.p12
+*api-key*.txt
+*-key.txt
+secrets/

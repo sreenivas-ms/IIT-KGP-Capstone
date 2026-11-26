@@ -41,6 +41,25 @@ Some class methods in the starter are more detailed than this minimum function l
 - A clarification response includes `clarification_question` and does not pretend execution succeeded.
 - A failure response must not display unverified numeric claims as verified.
 
+## Verification-facing conventions (P3/P4 ↔ P5)
+
+- `AnalysisStep.operation` for `run_analysis` should be one of `group_aggregate`, `top_n`,
+  `time_aggregate`, `quarter_comparison`, `grouped_ratio`, `filter_rows`, `safe_join`. Other
+  operations cannot be independently recomputed, so their answers are never VERIFIED.
+- The verifier reads the same step `inputs` as the P4 operation catalogue (`sheet`, `metrics`,
+  `metric_column`, `aggregation`, `group_by`, `date_column`, `frequency`, `by`, `n`, `ascending`,
+  `numerator`, `denominator`, `output_column`, `join_spec`, filters with `operator`); see
+  `docs/CRITIC_AND_ORCHESTRATION.md`. Result columns are named after the source column, as P4 does.
+- Executor `ToolError`s with `retryable=False` (deterministic validation errors) are routed to
+  REPLAN with the message as feedback; retryable ones to REPAIR of that step.
+- `make_chart` steps reference their source with `inputs.source_step_id` (or `depends_on[0]`) and
+  return `plotted_data` as `{"x": [...], "y": [...]}` (or keyed by the chart's x/y column names).
+- Result tables must be written under `VERISHEET_ARTIFACT_DIR`; paths outside it are rejected.
+- `verify_result` from the signature list is provided as `tools.verify.recompute_check`; whole-plan
+  verification is `tools.verify.verify_execution`.
+- Planner/Critic may expose `last_llm_response` (`LLMResponse`) and `prompt_version`; the
+  Orchestrator copies tokens, latency and prompt version into `TraceEvent`s.
+
 ## Error contract
 
 Use `ToolError` with stable `code`, `category`, `message`, `retryable`, optional `failed_step_id`, and bounded `safe_details`. Do not return raw exception tracebacks to the user. Save full safe diagnostics in trace artifacts.
