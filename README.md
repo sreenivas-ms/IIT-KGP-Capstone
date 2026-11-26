@@ -45,7 +45,10 @@ pip install -e .
 cp .env.example .env  # Windows: copy .env.example .env
 ```
 
-Configure `QWEN_API_BASE`, `QWEN_API_KEY`, and `QWEN_MODEL` in `.env`. Never commit `.env` or credentials.
+Configure `QWEN_API_BASE`, `QWEN_API_KEY`, `QWEN_MODEL` (`Qwen/Qwen3-8B`) and `QWEN_CA_CERT` in `.env`.
+Put the course CA certificate (for example `vm04-ca.crt`) in `config/`; `*.crt`, `.env` and key files are
+git-ignored. TLS verification stays on. Never commit `.env` or credentials, and never paste a key into
+prompts, traces or screenshots. If a key is exposed, ask the coordinator for a replacement.
 
 ```bash
 python -m pytest -q
@@ -103,6 +106,7 @@ Read `docs/INTEGRATION_CONTRACTS.md` and `docs/DEVELOPMENT_WORKFLOW.md` before c
 - `docs/DATA_DICTIONARY.md` — metric and dataset rules.
 - `docs/PLANNER.md` — Qwen client, Planner prompt/policies, live evaluation and integration notes (P3).
 - `docs/PROFILING_AND_RETRIEVAL.md` — profiling warnings, retrieval index build, provenance and evaluation (P2).
+- `docs/CRITIC_AND_ORCHESTRATION.md` — verifier, critic routing, orchestration budgets and state (P5).
 
 ## Profiling and retrieval (P2) quick start
 
@@ -117,6 +121,22 @@ python scripts/eval_retrieval.py   # recall@k / MRR for dense, BM25 and hybrid r
 `retrieve_context` returns a `RetrievedContext` whose items carry `item_id`, `source_path`
 (`file#heading`), `title`, `score` and `source_type`, plus the `corpus_version` of the index. If the
 index is missing it returns no items and a `RETRIEVAL_UNAVAILABLE` warning instead of failing.
+
+## Critic, verification and orchestration (P5) quick start
+
+```python
+from verisheet.orchestrator import AgentOrchestrator, run_agent
+response = run_agent("What was profit in the last completed quarter?", "data/derived/superstore.xlsx", "session-1")
+print(response.status, response.answer, response.trace_id)
+```
+
+`run_agent` returns one `AnswerResponse` on every path (VERIFIED / NOT_VERIFIED /
+CLARIFICATION_REQUIRED / FAILED). Numbers are VERIFIED only after `tools/verify.py` recomputes them
+from the source workbook; the Qwen critic can veto but never approve. `run_agent` wires the real
+profiler, retriever, Planner and Executor; if the Qwen endpoint is not configured it returns a FAILED
+response that says so. `tests/test_p5_integration.py` runs the whole loop with the real P2/P3/P4
+modules and a scripted Qwen. Details, step input conventions and routing rules:
+`docs/CRITIC_AND_ORCHESTRATION.md`.
 
 ## Definition of Done for every task
 

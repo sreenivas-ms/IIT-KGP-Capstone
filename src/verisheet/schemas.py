@@ -6,10 +6,15 @@ changes require review from all modules that consume the changed model.
 """
 
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+def _utcnow() -> datetime:
+    """Timezone-aware UTC timestamp (``datetime.utcnow`` is deprecated since Python 3.12)."""
+    return datetime.now(timezone.utc)
 
 
 class StrictModel(BaseModel):
@@ -103,7 +108,7 @@ class WorkbookProfile(StrictModel):
     size_bytes: int
     sheets: list[SheetProfile]
     warnings: list[QualityWarning] = Field(default_factory=list)
-    inspected_at: datetime = Field(default_factory=datetime.utcnow)
+    inspected_at: datetime = Field(default_factory=_utcnow)
     profile_version: str = "1.0"
 
 
@@ -281,7 +286,7 @@ class StateMessage(StrictModel):
     """Sanitised user/assistant turn summary used to preserve multi-turn context."""
     role: Literal["user", "assistant"]
     content_summary: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=_utcnow)
 
 
 class AgentState(StrictModel):
@@ -323,7 +328,7 @@ class TraceEvent(StrictModel):
     """Append-only observability event; summaries must be PII-minimised and bounded."""
     trace_id: str
     event_id: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=_utcnow)
     actor: str
     event_type: str
     step_id: str | None = None

@@ -7,3 +7,9 @@ data/raw
 data/gold
 artifacts
 results/traces
+.env.*
+!.env.example
+*.pem
+*.key
+*-key.txt
+secrets/
