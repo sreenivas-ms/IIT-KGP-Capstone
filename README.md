@@ -40,36 +40,58 @@ python -m venv .venv
 # Windows PowerShell: .venv\\Scripts\\Activate.ps1
 # macOS/Linux: source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements.txt          # add requirements-local-embeddings.txt only for offline local BGE
 pip install -e .
 cp .env.example .env  # Windows: copy .env.example .env
 ```
 
-Configure `QWEN_API_BASE`, `QWEN_API_KEY`, `QWEN_MODEL` (`Qwen/Qwen3-8B`) and `QWEN_CA_CERT` in `.env`.
-Put the course CA certificate (for example `vm04-ca.crt`) in `config/`; `*.crt`, `.env` and key files are
-git-ignored. TLS verification stays on. Never commit `.env` or credentials, and never paste a key into
-prompts, traces or screenshots. If a key is exposed, ask the coordinator for a replacement.
+Fill in `.env` (never commit it):
+
+| Variable | Value |
+|---|---|
+| `QWEN_API_BASE` / `QWEN_API_KEY` | your group's Track B URL and key (group 046-065: `…:1034/v1`) |
+| `QWEN_MODEL` | `Qwen/Qwen3-8B` |
+| `QWEN_CA_CERT` | `config/vm04-ca.crt` (your group's certificate) |
+| `EMBEDDING_API_BASE` / `EMBEDDING_API_KEY` | the shared embedding API and key |
+| `EMBEDDING_CA_CERT` | `config/vm02-ca.crt` |
+
+Put the course CA certificates in `config/`. The files `*.crt`, `.env` and key files are git-ignored.
+TLS verification stays on. Never commit `.env` or credentials, and never paste a key into prompts,
+traces or screenshots. If a key is exposed, ask the coordinator for a replacement.
 
 ```bash
-python -m pytest -q
-streamlit run app.py
+python scripts/p3_api_check.py   # Qwen reachable?
+python scripts/build_index.py    # retrieval index (embedding API)
+python -m pytest -q              # unit, integration, security and UI tests (offline)
+streamlit run app.py             # UI at http://localhost:8501 (Analyse + Traces pages)
 ```
 
-Contract tests are executable immediately. Module-specific tests are initially marked as implementation placeholders and must be enabled as stories are completed. The Streamlit UI is a visible scaffold until Person 6 connects the orchestrator.
-
-## Required project commands (target interfaces)
-
-The  backlog describes implementation of these commands:
+### Docker
 
 ```bash
-python scripts/prepare_data.py --seed 42
-python scripts/generate_gold.py --config config/tasks.yaml
-python experiments/run.py --system full --split dev
-python experiments/run.py --system full --split test
+docker build --pull -t verisheet .
+docker run --rm -p 8501:8501 --env-file .env -v "$PWD/config:/app/config:ro" verisheet
+```
+
+The image holds no keys or certificates: `.env` is passed at run time and `config/` is mounted
+read-only. The retrieval index is built on first start.
+
+## Project commands
+
+```bash
+python scripts/prepare_data.py --seed 42                     # Person 1 (not yet implemented)
+python scripts/generate_gold.py --config config/tasks.yaml   # Person 1 (not yet implemented)
+python experiments/build_smoke_set.py                        # P6 smoke set from the fixtures
+python experiments/run.py --system all --split dev --questions experiments/smoke/questions.jsonl --out results/experiments/smoke
+python experiments/run.py --system full --split test         # needs Person 1's frozen questions
 python experiments/inject_errors.py --suite 20_cases
-python experiments/score.py --results results/traces --out results/summary.csv
+python experiments/score.py --results results/experiments/smoke --gold experiments/smoke/gold.jsonl --out results/experiments/smoke/score_summary.json
+python experiments/ablate.py --runs results/experiments/smoke --gold experiments/smoke/gold.jsonl --out results/experiments/smoke/ablation.json
 streamlit run app.py
 ```
+
+See `docs/EVALUATION.md` for the variants, metric definitions and the injection suite, and
+`docs/DEMO_RUNBOOK.md` for the 10-minute demo.
 
 ## Non-negotiable acceptance conditions
 
@@ -104,6 +126,9 @@ Read `docs/INTEGRATION_CONTRACTS.md` and `docs/DEVELOPMENT_WORKFLOW.md` before c
 - `docs/INTEGRATION_CONTRACTS.md` — schemas and interface rules.
 - `docs/SECURITY.md` — upload, prompt-injection, PII and sandbox controls.
 - `docs/DATA_DICTIONARY.md` — metric and dataset rules.
+- `docs/EVALUATION.md` — E1–E5 variants, metric definitions, 20-case injection suite, reproduction (P6).
+- `docs/DEMO_RUNBOOK.md` — 10-minute demo script and fallback plan (P6).
+- `docs/REPORT.md` — technical report (architecture, prompts, RAG, agent decisions, evaluation, security, limitations).
 - `docs/PLANNER.md` — Qwen client, Planner prompt/policies, live evaluation and integration notes (P3).
 - `docs/PROFILING_AND_RETRIEVAL.md` — profiling warnings, retrieval index build, provenance and evaluation (P2).
 - `docs/CRITIC_AND_ORCHESTRATION.md` — verifier, critic routing, orchestration budgets and state (P5).

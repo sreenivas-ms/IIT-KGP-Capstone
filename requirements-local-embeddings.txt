@@ -1,0 +1,4 @@
+# Optional: local BAAI/bge-small-en-v1.5 via sentence-transformers (pulls in PyTorch, ~2 GB).
+# Only needed when EMBEDDING_PROVIDER=local or the embedding API is not configured.
+-r requirements.txt
+sentence-transformers>=3.0,<6

@@ -1,0 +1,431 @@
+{
+  "question_ids": [
+    "s01",
+    "s02",
+    "s03",
+    "s04",
+    "s05",
+    "s06",
+    "s07",
+    "s08",
+    "s09",
+    "s10",
+    "s11",
+    "s12"
+  ],
+  "test_set_sha256": "9b151cfc05a1475ef27e2e2d348a44563305dddec532a8273e606ceb5ec1dc02",
+  "model_names": [
+    "Qwen/Qwen3-8B"
+  ],
+  "prompt_versions": {
+    "deterministic_critic": {
+      "planner": "1.5",
+      "critic": "1.1"
+    },
+    "direct": {
+      "direct": "1.0"
+    },
+    "full": {
+      "planner": "1.5",
+      "critic": "1.1"
+    },
+    "llm_critic": {
+      "planner": "1.5",
+      "critic": "1.1"
+    },
+    "planner_executor": {
+      "planner": "1.5"
+    }
+  },
+  "table": [
+    {
+      "variant": "direct",
+      "label": "E1",
+      "task_success": 0.5,
+      "task_success_vs_full": -0.5,
+      "numeric_accuracy": 0.5,
+      "numeric_accuracy_vs_full": -0.5,
+      "delivered_numeric_accuracy": 0.5,
+      "delivered_numeric_accuracy_vs_full": -0.5,
+      "verified_coverage": 0.0,
+      "verified_coverage_vs_full": -1.0,
+      "verified_correct_coverage": 0.0,
+      "verified_correct_coverage_vs_full": -1.0,
+      "false_verification_rate": null,
+      "refusal_accuracy": 0.5,
+      "refusal_accuracy_vs_full": -0.5,
+      "plot_data_accuracy": null,
+      "chart_appropriateness": null,
+      "mean_llm_calls": 1,
+      "mean_llm_calls_vs_full": -0.83,
+      "latency_ms_median": 1289.0,
+      "latency_ms_median_vs_full": -7003.9,
+      "tokens_median": 1242.0,
+      "tokens_median_vs_full": -3472.0
+    },
+    {
+      "variant": "planner_executor",
+      "label": "E2",
+      "task_success": 1.0,
+      "task_success_vs_full": 0.0,
+      "numeric_accuracy": 1.0,
+      "numeric_accuracy_vs_full": 0.0,
+      "delivered_numeric_accuracy": 0.7,
+      "delivered_numeric_accuracy_vs_full": -0.3,
+      "verified_coverage": 0.0,
+      "verified_coverage_vs_full": -1.0,
+      "verified_correct_coverage": 0.0,
+      "verified_correct_coverage_vs_full": -1.0,
+      "false_verification_rate": null,
+      "refusal_accuracy": 1.0,
+      "refusal_accuracy_vs_full": 0.0,
+      "plot_data_accuracy": 1.0,
+      "plot_data_accuracy_vs_full": 0.0,
+      "chart_appropriateness": 1.0,
+      "chart_appropriateness_vs_full": 0.0,
+      "mean_llm_calls": 1,
+      "mean_llm_calls_vs_full": -0.83,
+      "latency_ms_median": 5982.4,
+      "latency_ms_median_vs_full": -2310.5,
+      "tokens_median": 3578.0,
+      "tokens_median_vs_full": -1136.0
+    },
+    {
+      "variant": "llm_critic",
+      "label": "E3",
+      "task_success": 1.0,
+      "task_success_vs_full": 0.0,
+      "numeric_accuracy": 1.0,
+      "numeric_accuracy_vs_full": 0.0,
+      "delivered_numeric_accuracy": 0.7,
+      "delivered_numeric_accuracy_vs_full": -0.3,
+      "verified_coverage": 0.0,
+      "verified_coverage_vs_full": -1.0,
+      "verified_correct_coverage": 0.0,
+      "verified_correct_coverage_vs_full": -1.0,
+      "false_verification_rate": null,
+      "refusal_accuracy": 1.0,
+      "refusal_accuracy_vs_full": 0.0,
+      "plot_data_accuracy": 1.0,
+      "plot_data_accuracy_vs_full": 0.0,
+      "chart_appropriateness": 1.0,
+      "chart_appropriateness_vs_full": 0.0,
+      "mean_llm_calls": 1.83,
+      "mean_llm_calls_vs_full": 0.0,
+      "latency_ms_median": 8278.7,
+      "latency_ms_median_vs_full": -14.2,
+      "tokens_median": 4714.0,
+      "tokens_median_vs_full": 0.0
+    },
+    {
+      "variant": "deterministic_critic",
+      "label": "E4",
+      "task_success": 1.0,
+      "task_success_vs_full": 0.0,
+      "numeric_accuracy": 1.0,
+      "numeric_accuracy_vs_full": 0.0,
+      "delivered_numeric_accuracy": 1.0,
+      "delivered_numeric_accuracy_vs_full": 0.0,
+      "verified_coverage": 1.0,
+      "verified_coverage_vs_full": 0.0,
+      "verified_correct_coverage": 1.0,
+      "verified_correct_coverage_vs_full": 0.0,
+      "false_verification_rate": 0.0,
+      "false_verification_rate_vs_full": 0.0,
+      "refusal_accuracy": 1.0,
+      "refusal_accuracy_vs_full": 0.0,
+      "plot_data_accuracy": 1.0,
+      "plot_data_accuracy_vs_full": 0.0,
+      "chart_appropriateness": 1.0,
+      "chart_appropriateness_vs_full": 0.0,
+      "mean_llm_calls": 1,
+      "mean_llm_calls_vs_full": -0.83,
+      "latency_ms_median": 6081.2,
+      "latency_ms_median_vs_full": -2211.7,
+      "tokens_median": 3578.0,
+      "tokens_median_vs_full": -1136.0
+    },
+    {
+      "variant": "full",
+      "label": "E5",
+      "task_success": 1.0,
+      "numeric_accuracy": 1.0,
+      "delivered_numeric_accuracy": 1.0,
+      "verified_coverage": 1.0,
+      "verified_correct_coverage": 1.0,
+      "false_verification_rate": 0.0,
+      "refusal_accuracy": 1.0,
+      "plot_data_accuracy": 1.0,
+      "chart_appropriateness": 1.0,
+      "mean_llm_calls": 1.83,
+      "latency_ms_median": 8292.9,
+      "tokens_median": 4714.0
+    }
+  ],
+  "per_question": {
+    "s01": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s02": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s03": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": false
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s04": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": false
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s05": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": false
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s06": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": false
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s07": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s08": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s09": {
+      "deterministic_critic": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      },
+      "direct": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      },
+      "full": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      }
+    },
+    "s10": {
+      "deterministic_critic": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      },
+      "direct": {
+        "status": "FAILED",
+        "success": false
+      },
+      "full": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": true
+      }
+    },
+    "s11": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "CLARIFICATION_REQUIRED",
+        "success": false
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    },
+    "s12": {
+      "deterministic_critic": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "direct": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "full": {
+        "status": "VERIFIED",
+        "success": true
+      },
+      "llm_critic": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      },
+      "planner_executor": {
+        "status": "NOT_VERIFIED",
+        "success": true
+      }
+    }
+  }
+}

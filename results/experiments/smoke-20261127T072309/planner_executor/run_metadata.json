@@ -1,0 +1,36 @@
+{
+  "run_id": "planner_executor-dev-20261127T073944-590dae",
+  "variant": "planner_executor",
+  "variant_label": "E2",
+  "split": "dev",
+  "question_file": "experiments/smoke/questions.jsonl",
+  "test_set_sha256": "9b151cfc05a1475ef27e2e2d348a44563305dddec532a8273e606ceb5ec1dc02",
+  "question_ids": [
+    "s01",
+    "s02",
+    "s03",
+    "s04",
+    "s05",
+    "s06",
+    "s07",
+    "s08",
+    "s09",
+    "s10",
+    "s11",
+    "s12"
+  ],
+  "model_name": "Qwen/Qwen3-8B",
+  "prompt_versions": {
+    "planner": "1.5"
+  },
+  "temperature": 0.0,
+  "max_actions": 10,
+  "max_repairs": 2,
+  "started": "2026-11-27T02:09:44.458118+00:00",
+  "python": "3.14.5",
+  "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+  "pandas": "2.3.3",
+  "numpy": "2.5.5",
+  "git_commit": "b045f7f78477bde09871dad8fdb380b585f669bc+dirty",
+  "finished": "2026-11-27T02:10:57.369433+00:00"
+}

@@ -1,0 +1,7 @@
+variant                 numeric_accuracy      task_success  verified_coverag  false_verificati  refusal_accuracy  latency_ms_media     tokens_median
+E4 deterministic_critic               1.0               1.0               1.0               0.0               1.0            6081.2            3578.0
+E1 direct                            0.5               0.5               0.0              None               0.5            1289.0            1242.0
+E5 full                              1.0               1.0               1.0               0.0               1.0            8292.9            4714.0
+E3 llm_critic                        1.0               1.0               0.0              None               1.0            8278.7            4714.0
+E2 planner_executor                  1.0               1.0               0.0              None               1.0            5982.4            3578.0
+saved results/experiments/smoke-20261127T072309/score_summary.json  (same test set: True)

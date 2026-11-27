@@ -208,10 +208,18 @@ def test_no_critic_variant_is_never_verified(env):
     assert orch.answer_question(Q1, env["wb"], "s1").status == AnswerStatus.NOT_VERIFIED
 
 
-def test_run_agent_uses_injected_orchestrator_and_handles_stubs(env):
+def test_run_agent_uses_injected_orchestrator_and_handles_stubs(env, monkeypatch):
     orch = make(env, ScriptedPlanner(quarter_plan()), FakeExecutor(env["artifacts"]))
     assert run_agent(Q1, env["wb"], "s1", orchestrator=orch).status == AnswerStatus.VERIFIED
-    default = run_agent(Q1, env["wb"], "s1")  # teammates' stubs not implemented yet
+    # Default wiring without Qwen credentials must fail safely. Clear them explicitly: with a
+    # configured .env the default system is fully implemented and would call live Qwen.
+    from verisheet.config import get_settings
+    for name in ("QWEN_API_BASE", "QWEN_API_KEY"):
+        monkeypatch.setenv(name, "")
+    get_settings.cache_clear()
+    monkeypatch.setattr("verisheet.qwen_client._env", lambda name: None)
+    default = run_agent(Q1, env["wb"], "s1")
+    get_settings.cache_clear()
     assert default.status == AnswerStatus.FAILED and default.trace_id.startswith("trace-")
 
 

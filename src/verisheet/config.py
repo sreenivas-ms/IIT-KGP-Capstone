@@ -1,7 +1,7 @@
 """Central application configuration loaded from environment variables."""
 
 from functools import lru_cache
-from pydantic import Field, SecretStr
+from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,9 +26,9 @@ class Settings(BaseSettings):
     embedding_model: str = "bge-small-en-v1.5"
     embedding_ca_cert: str = ""
     embedding_timeout_seconds: int = Field(default=30, ge=1, le=300)
-    data_dir: str = "data"
-    artifact_dir: str = "artifacts"
-    trace_dir: str = "results/traces"
+    data_dir: str = Field(default="data", validation_alias=AliasChoices("data_dir", "verisheet_data_dir"))  # .env.example uses VERISHEET_*
+    artifact_dir: str = Field(default="artifacts", validation_alias=AliasChoices("artifact_dir", "verisheet_artifact_dir"))  # .env.example uses VERISHEET_*
+    trace_dir: str = Field(default="results/traces", validation_alias=AliasChoices("trace_dir", "verisheet_trace_dir"))  # .env.example uses VERISHEET_*
     max_upload_mb: int = Field(default=50, ge=1, le=500)
     max_sample_rows: int = Field(default=50, ge=1, le=500)
     max_agent_actions: int = Field(default=10, ge=1, le=50)
