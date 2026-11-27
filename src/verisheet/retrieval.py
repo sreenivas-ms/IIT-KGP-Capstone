@@ -671,17 +671,18 @@ def _atomic_write_text(path: Path, text: str) -> None:
 
 
 def _default_backend(provider: str = "local") -> str:
-    """Vector search backend: ``VERISHEET_VECTOR_BACKEND`` env var, else faiss when safe.
+    """Vector search backend: ``VERISHEET_VECTOR_BACKEND`` env var, else faiss except on macOS.
 
-    On macOS the faiss-cpu and torch pip wheels each bundle their own ``libomp``; using both in
-    one process aborts with "OMP: Error #15". That only matters for the *local* encoder (torch);
-    with the embedding API torch is never loaded, so FAISS is used. Exact numpy inner-product
-    search returns the same ranking as ``IndexFlatIP`` and is the macOS + local default.
+    On macOS the faiss-cpu and torch pip wheels each bundle their own ``libomp``; once FAISS has
+    run, a later torch import in the same process aborts with "OMP: Error #15". Even with the
+    embedding API, other code in the process (tests, tools) may load torch later, so macOS
+    always defaults to exact numpy inner-product search, which ranks identically to
+    ``IndexFlatIP``. Linux/Docker use FAISS. ``provider`` is kept for API compatibility.
     """
     choice = os.environ.get("VERISHEET_VECTOR_BACKEND", "").strip().lower()
     if choice in ("faiss", "numpy"):
         return choice
-    if sys.platform == "darwin" and provider == "local":
+    if sys.platform == "darwin":
         return "numpy"
     return "faiss" if _try_import_faiss() is not None else "numpy"
 

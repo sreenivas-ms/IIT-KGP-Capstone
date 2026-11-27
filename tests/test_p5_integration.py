@@ -102,7 +102,9 @@ def test_live_demo_flow_verified_then_follow_up_keeps_context(env):
     second = orch.answer_question("Break total sales down by region.", env["wb"], "demo")
     assert second.status == AnswerStatus.VERIFIED
     assert "2024Q3" in qwen.calls[1]["user"]
-    assert "East: 1,600" in second.answer and "West: 2,000" in second.answer
+    # The follow-up keeps the verified quarter (VS-P3-04/P5-04): 2024Q3 sales, not all-time
+    # totals (East 1,600 / West 2,000), which the earlier assertion had locked in by mistake.
+    assert "East: 700" in second.answer and "West: 600" in second.answer
 
 
 def test_injected_plot_value_fault_is_repaired_by_rerendering_only_the_chart(env, monkeypatch):

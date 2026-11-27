@@ -278,9 +278,27 @@ def _parse_plan(raw_content: str) -> tuple[AnalysisPlan, bool]:
         if not (bare.startswith("{") and bare.endswith("}")):
             raise                                  # prose or truncated output: never guess
         try:
-            return AnalysisPlan.model_validate(json.loads(balance_brackets(bare))), True
+            return AnalysisPlan.model_validate(_first_object_with_empty_tail(balance_brackets(bare))), True
         except ValueError:
             raise strict_error from None
+
+
+_EMPTY_STRING_RE = re.compile(r'"(?:\\[nrt]|\s)*"')
+_JUNK_TAIL_RE = re.compile(r"[\s,:}\]]*")
+
+
+def _first_object_with_empty_tail(text: str) -> Any:
+    """Parse the first JSON value; allow only content-free junk after it.
+
+    Live Qwen sometimes appends `,"\\n"}` after a complete plan. A tail made only of commas,
+    closers and empty/whitespace strings carries no content and is dropped; anything else
+    (words, numbers, keys) raises ValueError so prose is never silently discarded.
+    """
+    value, end = json.JSONDecoder().raw_decode(text)
+    tail = _EMPTY_STRING_RE.sub("", text[end:])
+    if not _JUNK_TAIL_RE.fullmatch(tail):
+        raise ValueError("content after the JSON object")
+    return value
 
 
 def balance_brackets(text: str) -> str:
@@ -359,7 +377,68 @@ def _index_profile(profile: Any) -> tuple[dict[str, set[str]], set[str], set[str
     return cols, hidden, idents, {w.get("code") for w in data.get("warnings", [])}
 
 
-def check_plan(plan: AnalysisPlan, profile: Any, question: str = "") -> list[str]:
+_NEW_PERIOD_RE = re.compile(
+    r"\b(19|20)\d{2}\b|\bq[1-4]\b|\b(quarter|quarters|month|months|year|years|week|weeks|ytd|mtd|"
+    r"all[- ]time|overall|since|between|until)\b", re.IGNORECASE)
+_SAME_PERIOD_RE = re.compile(r"\b(same|that|this)\s+(quarter|month|year|week|period)\b", re.IGNORECASE)
+
+
+def _follow_up_period(question: str, state_facts: dict | None) -> dict | None:
+    """Verified period to carry into this plan, or None (no period / question names a new one)."""
+    period = (state_facts or {}).get("accepted_period") or {}
+    if not (period.get("start") and period.get("end")):
+        return None
+    if _NEW_PERIOD_RE.search(question or "") and not _SAME_PERIOD_RE.search(question or ""):
+        return None
+    return {"start": str(period["start"]), "end": str(period["end"])}
+
+
+def _covers_period(p: dict, period: dict, date_cols: set[str]) -> bool:
+    for f in p.get("filters", []):
+        if (isinstance(f, dict) and f.get("column") in date_cols and f.get("operator") == "between"
+                and [str(v) for v in (f.get("value") or [])] == [period["start"], period["end"]]):
+            return True
+    return False
+
+
+def _plan_date_columns(p: dict, profile: Any) -> set[str]:
+    """Date columns shared by every sheet the plan's run_analysis steps read."""
+    data = _dump(profile) or {}
+    by_sheet = {s["name"]: set((s.get("candidate_date_ranges") or {}).keys()) for s in data.get("sheets", [])}
+    sheets = {(st.get("inputs") or {}).get("sheet") for st in p.get("steps", [])
+              if st["tool"] == "run_analysis"} - {None}
+    sheets = sheets or set(p.get("source_sheets", []))
+    common = None
+    for sheet in sheets:
+        common = by_sheet.get(sheet, set()) if common is None else common & by_sheet.get(sheet, set())
+    return common or set()
+
+
+def carry_forward_period(plan: AnalysisPlan, profile: Any, question: str,
+                         state_facts: dict | None) -> tuple[AnalysisPlan, list[str]]:
+    """Keep the previously VERIFIED period on a follow-up that does not name a new period.
+
+    Adds a plan-level ``between`` filter on the single date column (the Executor applies plan
+    filters; the verifier applies them too) plus a matching ``date_range``. Ambiguous cases
+    (several date columns) are left to ``check_plan`` so the model must choose.
+    """
+    period = _follow_up_period(question, state_facts)
+    p = _dump(plan)
+    if period is None or p.get("clarification_needed"):
+        return plan, []
+    date_cols = _plan_date_columns(p, profile)
+    if _covers_period(p, period, date_cols) or len(date_cols) != 1:
+        return plan, []
+    column = next(iter(date_cols))
+    rule = {"column": column, "operator": "between", "value": [period["start"], period["end"]]}
+    updated = {**p, "filters": [*p.get("filters", []), rule], "date_range": dict(period)}
+    note = f"kept verified period {period['start']}..{period['end']} as filter on {column}"
+    updated["assumptions"] = [*p.get("assumptions", []), f"Follow-up: {note} (from accepted state)."]
+    return AnalysisPlan.model_validate(updated), [note]
+
+
+def check_plan(plan: AnalysisPlan, profile: Any, question: str = "",
+               state_facts: dict | None = None) -> list[str]:
     """Deterministic policy checks; returns human-readable problems (empty list = OK).
 
     Checks: step ids/dependencies/budget, unknown or hidden sheets, unknown columns
@@ -437,6 +516,17 @@ def check_plan(plan: AnalysisPlan, profile: Any, question: str = "") -> list[str
 
     # executor compatibility (operations, inputs, filters, chart columns)
     problems += _check_steps(p, cols)
+
+    # follow-up: keep the verified period unless the user names a new one (VS-P3-04)
+    period = _follow_up_period(q, state_facts)
+    if period:
+        date_cols = _plan_date_columns(p, profile)
+        if not _covers_period(p, period, date_cols):
+            col = sorted(date_cols)[0] if date_cols else "<date column>"
+            problems.append(
+                f"this is a follow-up: keep the verified period by adding to plan filters "
+                f'{{"column": "{col}", "operator": "between", "value": ["{period["start"]}", '
+                f'"{period["end"]}"]}} and date_range {{"start": "{period["start"]}", "end": "{period["end"]}"}}.')
 
     # currency: summing amounts across several currencies needs a rate or a currency filter
     currency_cols = _multi_valued_currency_columns(profile)
@@ -698,7 +788,8 @@ class Planner:
                                      retrieved_context, facts, feedback,
                                      action_budget=_max_actions())
         plan = self._ask(system, user, workbook_profile, question,
-                         plan_id=f"plan-{uuid.uuid4().hex[:8]}", state_ignored=ignored)
+                         plan_id=f"plan-{uuid.uuid4().hex[:8]}", state_ignored=ignored,
+                         state_facts=facts)
         self._contexts[plan.plan_id] = {"question": question, "profile": workbook_profile,
                                         "context": retrieved_context}
         return plan
@@ -730,14 +821,16 @@ class Planner:
         facts, ignored = usable_state(state, profile)
         system, user = build_prompts(self.system_prompt, question, profile, ctx.get("context"),
                                      facts, fb, prior_plan, _max_actions())
-        plan = self._ask(system, user, profile, question, plan_id=new_id, state_ignored=ignored)
+        plan = self._ask(system, user, profile, question, plan_id=new_id, state_ignored=ignored,
+                         state_facts=facts)
         self._contexts[plan.plan_id] = {"question": question, "profile": profile,
                                         "context": ctx.get("context")}
         return plan
 
     # ---- internals --------------------------------------------------------
     def _ask(self, system: str, user: str, profile: Any, question: str,
-             plan_id: str, state_ignored: str | None = None) -> AnalysisPlan:
+             plan_id: str, state_ignored: str | None = None,
+             state_facts: dict | None = None) -> AnalysisPlan:
         calls: list[LLMResponse] = []
         extra, last_error = "", ""
         json_repairs, policy_repairs = 0, 0
@@ -764,7 +857,9 @@ class Planner:
                 continue
             plan, fixed = normalize_plan(plan, profile)
             auto_fixes += fixed
-            problems = check_plan(plan, profile, question)
+            plan, fixed = carry_forward_period(plan, profile, question, state_facts)
+            auto_fixes += fixed
+            problems = check_plan(plan, profile, question, state_facts)
             if not problems:
                 break
             if policy_repairs >= MAX_POLICY_REPAIRS:

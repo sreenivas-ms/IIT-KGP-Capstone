@@ -201,7 +201,11 @@ def create_encoder(model_name: str, settings: Any = None) -> Any:
             ca_cert=settings.embedding_ca_cert or None,
             timeout=settings.embedding_timeout_seconds,
         )
-    from sentence_transformers import SentenceTransformer  # noqa: PLC0415 - heavy, optional
+    try:
+        from sentence_transformers import SentenceTransformer  # noqa: PLC0415 - heavy, optional
+    except ImportError as exc:
+        raise ImportError("Local embeddings need `pip install -r requirements-local-embeddings.txt`, "
+                          "or configure EMBEDDING_API_BASE/EMBEDDING_API_KEY to use the embedding API.") from exc
 
     logger.info("embeddings via local sentence-transformers model=%s", model_name)
     return SentenceTransformer(model_name)

@@ -123,14 +123,52 @@ def test_planner_rejects_column_not_in_profile():
         p.generate_plan("sales by region", SUPERSTORE, CONTEXT)
 
 
+def _dated(prof, sheet="Orders", column="Order Date"):
+    data = prof.model_dump()
+    for sh in data["sheets"]:
+        if sh["name"] == sheet:
+            sh["candidate_date_ranges"] = {column: {"min": "2017-01-01", "max": "2017-12-31"}}
+    return WorkbookProfile.model_validate(data)
+
+
+Q3_STATE = dict(session_id="s1", workbook_id="sha256:aaa",
+                accepted_period={"start": "2017-07-01", "end": "2017-09-30"},
+                accepted_metric=MetricSpec(name="profit", source_columns=["Profit"], aggregation="sum"))
+
+
 def test_planner_preserves_verified_period_for_follow_up():
-    state = AgentState(session_id="s1", workbook_id="sha256:aaa",
-                       accepted_period={"start": "2017-07-01", "end": "2017-09-30"},
-                       accepted_metric=MetricSpec(name="profit", source_columns=["Profit"], aggregation="sum"))
-    p = planner_with(plan_dict())
-    p.generate_plan("Now break it down by region", SUPERSTORE, CONTEXT, previous_state=state)
+    # Live run found Qwen dropping the period on "break it down by region"; code now keeps it.
+    p = planner_with(plan_dict())                      # model's plan has NO date filter
+    out = p.generate_plan("Now break it down by region", _dated(SUPERSTORE), CONTEXT,
+                          previous_state=AgentState(**Q3_STATE))
     user = p.client.calls[0]["user"]
     assert "<previous>" in user and "2017-07-01" in user and "Profit" in user
+    assert {"column": "Order Date", "operator": "between", "value": ["2017-07-01", "2017-09-30"]} in out.filters
+    assert out.date_range == {"start": "2017-07-01", "end": "2017-09-30"}
+    assert len(p.client.calls) == 1 and "kept verified period" in p.last_run["auto_fixes"][0]
+
+
+def test_follow_up_naming_a_new_period_is_not_forced_into_the_old_one():
+    from verisheet.planner import carry_forward_period
+    facts = {"accepted_period": {"start": "2017-07-01", "end": "2017-09-30"}}
+    dated = _dated(SUPERSTORE)
+    assert carry_forward_period(plan(), dated, "Now show 2016 by region", facts) == (plan(), [])
+    assert carry_forward_period(plan(), dated, "and the previous quarter?", facts) == (plan(), [])
+    kept, notes = carry_forward_period(plan(), dated, "same quarter but by segment", facts)
+    assert notes and kept.date_range == {"start": "2017-07-01", "end": "2017-09-30"}
+    assert carry_forward_period(plan(), dated, "by region", None) == (plan(), [])
+
+
+def test_ambiguous_date_column_makes_model_add_the_period():
+    two = profile({"Orders": ["Order Date", "Ship Date", "Region", "Sales"]})
+    data = two.model_dump()
+    data["sheets"][0]["candidate_date_ranges"] = {"Order Date": {}, "Ship Date": {}}
+    two = WorkbookProfile.model_validate(data)
+    facts = {"accepted_period": {"start": "2017-07-01", "end": "2017-09-30"}}
+    problems = check_plan(plan(), two, "by region", facts)
+    assert any("keep the verified period" in s for s in problems)
+    fixed = plan(filters=[{"column": "Ship Date", "operator": "between", "value": ["2017-07-01", "2017-09-30"]}])
+    assert not any("verified period" in s for s in check_plan(fixed, two, "by region", facts))
 
 
 # ---- state handling (VS-P3-04) -------------------------------------------
@@ -510,3 +548,14 @@ def test_planner_logs_bracket_repair_without_extra_call():
 def test_plan_without_run_analysis_is_rejected():
     preview = plan(steps=[_step(None, {"sheet": "Orders", "n": 2}, sid="s", tool="sample_rows")])
     assert any("computes nothing" in s for s in check_plan(preview, SUPERSTORE, "top 2 orders"))
+
+
+def test_parser_drops_content_free_tail_but_not_prose():
+    # Live Qwen (quarter question) appended `,"\n"}` after a complete plan -> 4 failed calls.
+    from verisheet.planner import _parse_plan
+    body = plan().model_dump_json()
+    repaired, flag = _parse_plan(body + ',"\\n"}')
+    assert flag and repaired == plan()
+    for tail in (', "extra": 1}', " Hope this helps!}", ',"42"}'):
+        with pytest.raises(ValueError):
+            _parse_plan(body + tail)

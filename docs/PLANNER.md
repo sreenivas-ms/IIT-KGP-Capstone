@@ -73,7 +73,8 @@ as data. The whole prompt is sized to fit the 8192-token limit (see `planner_con
   repairs. The hard cap is 4 calls, after which `PlanValidationError` is raised.
 - **Deterministic auto-fixes** (logged in `last_run["auto_fixes"]`; they do not use a call):
   - chart columns that differ from a real result column only in letter case
-  - missing closing brackets in a reply that is otherwise complete JSON
+  - missing closing brackets in a reply that is otherwise complete JSON, and a content-free tail after it
+    (for example `,"\n"}`, seen live)
 
   Prose and truncated replies are never repaired, and repaired output must still pass the strict
   schema.

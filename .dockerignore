@@ -1,15 +1,23 @@
 .git
 .venv
 __pycache__
+*.py[cod]
 .pytest_cache
+.ruff_cache
+.mypy_cache
+*.egg-info
+# secrets and certificates: never in the image (pass --env-file, mount config/ read-only)
 .env
-data/raw
-data/gold
-artifacts
-results/traces
 .env.*
 !.env.example
+*.crt
 *.pem
 *.key
 *-key.txt
 secrets/
+# data/results produced at run time
+data/raw
+data/derived
+data/gold
+artifacts
+results

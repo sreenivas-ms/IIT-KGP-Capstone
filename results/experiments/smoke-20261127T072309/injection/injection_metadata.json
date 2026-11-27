@@ -1,0 +1,75 @@
+{
+  "run_id": "injection-20_cases-20261127T073527-b89396",
+  "suite": "20_cases",
+  "cases_file": "/Users/himanshusharma/iit-kgp-project/IIT-KGP-Capstone/experiments/injection_cases.json",
+  "n_cases": 20,
+  "started_finished": "2026-11-27T02:08:31.964870+00:00",
+  "python": "3.14.5",
+  "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+  "pandas": "2.3.3",
+  "numpy": "2.5.5",
+  "git_commit": "b045f7f78477bde09871dad8fdb380b585f669bc+dirty",
+  "model_name": "Qwen/Qwen3-8B",
+  "prompt_versions": {
+    "planner": "1.5",
+    "critic": "1.1"
+  },
+  "summary": {
+    "n_cases": 20,
+    "passed": 19,
+    "pass_rate": 0.95,
+    "error_detection_recall": 0.9167,
+    "n_triggered_pipeline_faults": 12,
+    "untriggered_faults": [],
+    "repaired_to_correct": 10,
+    "false_verifications": [
+      "c09"
+    ],
+    "by_category": {
+      "wrong_aggregation": {
+        "cases": 3,
+        "passed": 3
+      },
+      "duplicated_join": {
+        "cases": 2,
+        "passed": 2
+      },
+      "unsafe_code": {
+        "cases": 1,
+        "passed": 1
+      },
+      "wrong_period": {
+        "cases": 3,
+        "passed": 3
+      },
+      "wrong_metric": {
+        "cases": 1,
+        "passed": 0
+      },
+      "invalid_chart_arrays": {
+        "cases": 4,
+        "passed": 4
+      },
+      "missing_metric": {
+        "cases": 1,
+        "passed": 1
+      },
+      "missing_sheet": {
+        "cases": 1,
+        "passed": 1
+      },
+      "missing_column": {
+        "cases": 1,
+        "passed": 1
+      },
+      "prompt_injection": {
+        "cases": 2,
+        "passed": 2
+      },
+      "ambiguous_dates": {
+        "cases": 1,
+        "passed": 1
+      }
+    }
+  }
+}
